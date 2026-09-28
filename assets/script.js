@@ -140,6 +140,7 @@ function switchTab(tab, updateUrl = true) {
   $$(".tab-btn").forEach((button) => {
     const isActive = button.dataset.tab === activeTab;
     button.setAttribute("aria-selected", String(isActive));
+    button.setAttribute("tabindex", isActive ? "0" : "-1");
     button.classList.toggle("bg-slate-900", isActive);
     button.classList.toggle("text-white", isActive);
     button.classList.toggle("shadow-sm", isActive);
@@ -160,6 +161,24 @@ function switchTab(tab, updateUrl = true) {
 
 $$(".tab-btn").forEach((button) => {
   button.addEventListener("click", () => switchTab(button.dataset.tab));
+
+  button.addEventListener("keydown", (event) => {
+    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+
+    const tabs = $$(".tab-btn");
+    const currentIndex = tabs.indexOf(button);
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
+    if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = tabs.length - 1;
+
+    event.preventDefault();
+    const nextTab = tabs[nextIndex];
+    switchTab(nextTab.dataset.tab);
+    nextTab.focus();
+  });
 });
 
 window.addEventListener("popstate", () => switchTab(getTabFromUrl(), false));
